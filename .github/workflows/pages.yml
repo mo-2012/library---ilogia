@@ -1,7 +1,8 @@
-# Prepared, NOT active until this repository is pushed and Pages is switched to "GitHub Actions" (Settings → Pages).
+# Builds the Vite app and publishes dist/ (NOT the raw source) to GitHub Pages. Pages source must be "GitHub Actions".
 name: Deploy to GitHub Pages
 on:
-  workflow_dispatch:           # manual only on purpose: nothing deploys by itself until the owner decides
+  push: { branches: [main] }
+  workflow_dispatch:
 permissions:
   contents: read
   pages: write
