@@ -1,0 +1,31 @@
+{
+  "name": "ilogia-library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "iLogia Library — digital learning library (static frontend + Supabase)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "predev": "node scripts/copy-pdfjs-assets.mjs",
+    "prebuild": "node scripts/copy-pdfjs-assets.mjs",
+    "test": "node tests/i18n-check.mjs && npm run build && node tests/e2e.mjs",
+    "test:i18n": "node tests/i18n-check.mjs",
+    "test:sql": "node tests/sql/run.mjs",
+    "test:e2e": "node tests/e2e.mjs"
+  },
+  "devDependencies": {
+    "embedded-postgres": "^18.6.0-beta.19",
+    "pg": "^8.23.1",
+    "vite": "^6.4.5"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
+    "@fontsource/noto-naskh-arabic": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "lucide": "^1.66.0",
+    "pdfjs-dist": "^6.4.299",
+    "tus-js-client": "^4.3.1"
+  }
+}
