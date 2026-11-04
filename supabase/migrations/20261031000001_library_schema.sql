@@ -180,13 +180,13 @@ create policy library_resources_delete on public.library_resources for delete to
   using (public.is_admin() or (uploaded_by = auth.uid() and status <> 'published'));
 
 -- ───────────────────────── per-user data ─────────────────────────
-create table if not exists public.library_bookmarks (
+create table if not exists public.library_resource_bookmarks (
   user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
   resource_id uuid not null references public.library_resources(id) on delete cascade,
   created_at  timestamptz not null default now(),
   primary key (user_id, resource_id)
 );
-create index if not exists library_bookmarks_user_idx on public.library_bookmarks (user_id, created_at desc);
+create index if not exists library_resource_bookmarks_user_idx on public.library_resource_bookmarks (user_id, created_at desc);
 
 create table if not exists public.library_reading_progress (
   user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -231,8 +231,8 @@ begin
     if (select count(*) from public.library_collections where user_id = new.user_id) >= 50 then raise exception 'collection_limit'; end if;
   elsif tg_table_name = 'library_collection_items' then
     if (select count(*) from public.library_collection_items where collection_id = new.collection_id) >= 500 then raise exception 'collection_items_limit'; end if;
-  elsif tg_table_name = 'library_bookmarks' then
-    if (select count(*) from public.library_bookmarks where user_id = new.user_id) >= 2000 then raise exception 'bookmark_limit'; end if;
+  elsif tg_table_name = 'library_resource_bookmarks' then
+    if (select count(*) from public.library_resource_bookmarks where user_id = new.user_id) >= 2000 then raise exception 'bookmark_limit'; end if;
   end if;
   return new;
 end $$;
@@ -240,8 +240,8 @@ drop trigger if exists library_collections_limit on public.library_collections;
 create trigger library_collections_limit before insert on public.library_collections for each row execute function public.library_limits();
 drop trigger if exists library_items_limit on public.library_collection_items;
 create trigger library_items_limit before insert on public.library_collection_items for each row execute function public.library_limits();
-drop trigger if exists library_bookmarks_limit on public.library_bookmarks;
-create trigger library_bookmarks_limit before insert on public.library_bookmarks for each row execute function public.library_limits();
+drop trigger if exists library_resource_bookmarks_limit on public.library_resource_bookmarks;
+create trigger library_resource_bookmarks_limit before insert on public.library_resource_bookmarks for each row execute function public.library_limits();
 
 create table if not exists public.library_reports (
   id              uuid primary key default gen_random_uuid(),
@@ -270,15 +270,15 @@ create index if not exists library_events_user_idx on public.library_events (use
 create index if not exists library_events_res_idx  on public.library_events (resource_id, kind, created_at desc);
 create index if not exists library_events_day_idx  on public.library_events (created_at desc);
 
-alter table public.library_bookmarks        enable row level security;
+alter table public.library_resource_bookmarks        enable row level security;
 alter table public.library_reading_progress enable row level security;
 alter table public.library_collections      enable row level security;
 alter table public.library_collection_items enable row level security;
 alter table public.library_reports          enable row level security;
 alter table public.library_events           enable row level security;
 
-drop policy if exists library_bookmarks_own on public.library_bookmarks;
-create policy library_bookmarks_own on public.library_bookmarks for all to authenticated
+drop policy if exists library_resource_bookmarks_own on public.library_resource_bookmarks;
+create policy library_resource_bookmarks_own on public.library_resource_bookmarks for all to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid() and exists (select 1 from public.library_resources r where r.id = resource_id));
 
@@ -315,10 +315,10 @@ create policy library_events_select on public.library_events for select to authe
   using (user_id = auth.uid() or public.is_admin());
 
 -- ───────────────────────── grants (defence in depth on top of RLS) ─────────────────────────
-revoke all on public.library_categories, public.library_resources, public.library_bookmarks, public.library_reading_progress,
+revoke all on public.library_categories, public.library_resources, public.library_resource_bookmarks, public.library_reading_progress,
               public.library_collections, public.library_collection_items, public.library_reports, public.library_events
   from anon, public;
-grant select, insert, update, delete on public.library_categories, public.library_resources, public.library_bookmarks,
+grant select, insert, update, delete on public.library_categories, public.library_resources, public.library_resource_bookmarks,
       public.library_reading_progress, public.library_collections, public.library_collection_items to authenticated;
 grant select, insert, update, delete on public.library_reports to authenticated;
 grant select on public.library_events to authenticated;
