@@ -69,7 +69,7 @@ begin
     'total_views', (select coalesce(sum(views_count), 0) from public.library_resources),
     'total_downloads', (select coalesce(sum(downloads_count), 0) from public.library_resources),
     'active_users_30d', (select count(distinct user_id) from public.library_events where created_at > now() - interval '30 days'),
-    'bookmarks', (select count(*) from public.library_resource_bookmarks),
+    'bookmarks', (select count(*) from public.library_bookmarks),
     'daily', coalesce((select jsonb_agg(jsonb_build_object('day', d, 'view', v, 'read', rd, 'download', dl) order by d) from (
         select g::date d,
                count(*) filter (where e.kind = 'view') v, count(*) filter (where e.kind = 'read') rd, count(*) filter (where e.kind = 'download') dl
@@ -86,8 +86,3 @@ revoke all on function public.library_track(uuid, text), public.library_review_r
                        public.library_facets(), public.library_admin_stats() from public, anon;
 grant execute on function public.library_track(uuid, text), public.library_review_resource(uuid, text, text),
                           public.library_facets(), public.library_admin_stats() to authenticated;
-
--- (library_004) ثبّت search_path لدوال الـ triggers
-alter function public.library_touch_updated_at() set search_path = public;
-alter function public.library_resources_guard()  set search_path = public;
-alter function public.library_limits()           set search_path = public;

@@ -90,10 +90,10 @@ export const track = (id, kind) => sb.rpc('library_track', { p_resource_id: id, 
 
 // ───────── bookmarks ─────────
 export const bookmarks = {
-  ids: async () => new Set((await sb.from('library_resource_bookmarks').select('resource_id').limit(2000).then(ok)).map((x) => x.resource_id)),
-  list: (n = 200) => sb.from('library_resource_bookmarks').select('created_at,resource:library_resources(' + LIST_COLS + ')').order('created_at', { ascending: false }).limit(n).then(ok),
-  add: (id) => sb.from('library_resource_bookmarks').upsert({ resource_id: id }, { onConflict: 'user_id,resource_id', ignoreDuplicates: true }).then(ok),
-  remove: (id) => sb.from('library_resource_bookmarks').delete().eq('resource_id', id).then(ok),
+  ids: async () => new Set((await sb.from('library_bookmarks').select('resource_id').limit(2000).then(ok)).map((x) => x.resource_id)),
+  list: (n = 200) => sb.from('library_bookmarks').select('created_at,resource:library_resources(' + LIST_COLS + ')').order('created_at', { ascending: false }).limit(n).then(ok),
+  add: (id) => sb.from('library_bookmarks').upsert({ resource_id: id }, { onConflict: 'user_id,resource_id', ignoreDuplicates: true }).then(ok),
+  remove: (id) => sb.from('library_bookmarks').delete().eq('resource_id', id).then(ok),
 };
 
 // ───────── reading progress ─────────
