@@ -1,38 +1,20 @@
-# PROGRESS — iLogia Library
+# iLogia Library — PROGRESS
 
-آخر تحديث: 2026-11-02
+## Status (2026-10-31)
+Rebuilt as a no-build static site using the **existing iLogia theme** (`ilogia-ds.css`, self-hosted fonts, green/ivory/gold) and the **existing Supabase tables** (`library_items`, `grades`, `subjects`, RPC `get_library_file`, bucket `library`). No migrations were run or written for this version.
 
-## الحالة: مكتمل محليًا، لم يُدفع ولم يُنشر. لم يُلمس مشروع Supabase الحقيقي ولا DNS.
+## Done (smoke-tested in headless Chromium against a MOCKED Supabase)
+- Sign-in, Arabic RTL default + English/LTR toggle, responsive header
+- Home (search, subject chips, latest, continue reading), Explore (search, subject/grade/type filters, sort, grid/list, pagination 24/page)
+- Resource details (open, save, share, add to list), signed URLs via `get_library_file` (server checks free/paid)
+- PDF reader (pdf.js 3.11.174 from cdnjs, range requests, page jump, zoom, fullscreen, remembers last page)
+- My Library (saved, continue reading, custom lists, history)
+- Strict CSP, HTML-escaped output, https-only external opening
 
-## ما أُنجز
-- [x] فحص مشروع iLogia الحالي (zip): Supabase، `library_items`، `get_library_file`، `is_admin()`، جداول `subjects/grades`.
-- [x] SQL: 8 جداول، RLS، Triggers حارسة، bucket خاص + سياسات، RPC (تتبع، مراجعة، facets، إحصاءات)، ملف استيراد اختياري، ملف تراجع.
-- [x] الصفحات: الرئيسية، Explore (تصفية/ترتيب/Grid/List/ترقيم)، التفاصيل، قارئ PDF، My Library (محفوظات/متابعة/قوائم/سجل)، التصنيفات، مركز الرفع، لوحة الإدارة.
-- [x] عربي RTL افتراضيًا + إنجليزي LTR، تصميم Navy/Gold، Responsive.
-- [x] التوثيق: `docs/STORAGE.md`, `docs/INTEGRATIONS.md`, `docs/DEPLOY.md`.
-
-## ما اختُبر فعلًا (وكيف)
-| الاختبار | النتيجة |
-|---|---|
-| `tests/sql/run.mjs` — الـ migrations مرتين (idempotent) على Postgres حقيقي + 66 فحص صلاحيات | 66/66 |
-| `tests/integration/postgrest.mjs` — **نفس `src/lib/api.js`** ضد PostgREST + Postgres حقيقيين مع الـ migrations | 44/44 |
-| `tests/e2e.mjs` — Chromium على نسخة `dist` مع Supabase وهمي (دخول، بحث، قارئ، رفع، إدارة، XSS، موبايل، إنجليزي) | 68/68 |
-| `tests/i18n-check.mjs` — كل مفتاح ترجمة موجود بالعربية والإنجليزية | OK |
-| `vite build` | يعمل |
-
-## ما لم يُختبر (لا ندّعي نجاحه)
-- أي اتصال بمشروع Supabase الحقيقي: التحقق من أن `profiles.is_teacher`, `subjects.icon/sort_order`, `grades.stage/sort_order` موجودة كما استنتجنا من كود الموقع الحالي.
-- تسجيل الدخول الفعلي (Google OAuth، رسائل التأكيد، استعادة كلمة السر) وتدفق PKCE.
-- الرفع الفعلي إلى Supabase Storage (TUS مختبر ضد Mock فقط)، وسلوك Range مع الروابط الموقعة الحقيقية.
-- Safari/iOS والأجهزة الحقيقية؛ اختبرنا Chromium فقط.
-- المكتبة القديمة `legacy` (تتطلب `get_library_file` الحقيقية).
-- الأداء مع آلاف المصادر (الفهارس موجودة لكن لم تُقَس).
-
-## قرارات تحتاج موافقتك
-1. **الهوية:** البرومبت يحدد Navy/Gold، بينما موقع iLogia الحالي أخضر/عاجي. التزمنا بالبرومبت.
-2. **الجلسة:** الدخول غير مشترك مع `ilogia-eg.com` (انظر INTEGRATIONS).
-3. **حد الحجم 50 م.ب** حتى تؤكد حد خطتك.
-4. تشغيل الـ migrations على Staging ثم Production، وعمل Push/Deploy/DNS — كلها بانتظارك.
-
-## الخطوة التالية المقترحة
-شغّل الـ migrations على Staging، اضبط `VITE_SUPABASE_URL/KEY` للـ Staging، وجرّب `docs/DEPLOY.md` §5.
+## Not done / limits (be honest)
+- NOT tested against the real Supabase project or real files.
+- Bookmarks, lists, history and reading progress are stored in the browser (localStorage), per user and per device. Syncing them needs DB tables + RLS (migration for review first).
+- Upload Center and Admin are NOT in this app; the page links to the main site's admin/teacher dashboards that already exist.
+- Reports, usage stats, categories management, resource statuses (pending/review) and cover images need new tables/columns that do not exist in the current project.
+- PDF.js is loaded from cdnjs (needs network; vendor it for offline use).
+- No push, deploy or DNS change was made. `CNAME` = library.ilogia-eg.com is included.
